@@ -1,12 +1,22 @@
 require('dotenv').config();
 const express = require('express');
-require('express-async-errors'); // Phải gọi ngay sau express
+// Express 5 đã hỗ trợ async error handling natively, không cần express-async-errors
 const mongoose = require('mongoose');
 const cors = require('cors');
 const morgan = require('morgan');
+const path = require('path');
 
-// Import routes (sẽ thêm sau)
-// const userRoutes = require('./src/routes/userRoutes');
+// Import routes
+const userRoutes = require('./src/routes/userRoutes');
+const bookRoutes = require('./src/routes/bookRoutes');
+const categoryRoutes = require('./src/routes/categoryRoutes');
+const cartRoutes = require('./src/routes/cartRoutes');
+const orderRoutes = require('./src/routes/orderRoutes');
+const paymentRoutes = require('./src/routes/paymentRoutes');
+const discountRoutes = require('./src/routes/discountRoutes');
+const imageRoutes = require('./src/routes/imageRoutes');
+const reviewRoutes = require('./src/routes/reviewRoutes');
+const logMiddleware = require('./src/middlewares/logMiddleware');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -15,14 +25,15 @@ const PORT = process.env.PORT || 5000;
 app.use(express.json()); // Parse JSON requests
 app.use(cors()); // Cấu hình CORS
 app.use(morgan('dev')); // Logging HTTP requests
+app.use(logMiddleware); // Ghi log các action POST/PUT/DELETE/PATCH vào MongoDB
+
+// Serve static files (cho uploads)
+app.use('/public/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
 // 2. Connect Database (MongoDB Atlas)
 mongoose
-  .connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-  })
-  .then(() => console.log('✅ Kêt nối MongoDB (Atlas) thành công!'))
+  .connect(process.env.MONGODB_URI)
+  .then(() => console.log('✅ Kết nối MongoDB (Atlas) thành công!'))
   .catch((err) => console.error('❌ Lỗi kết nối MongoDB:', err));
 
 // 3. Root route cơ bản
@@ -33,13 +44,19 @@ app.get('/', (req, res) => {
   });
 });
 
-// 4. API Routes (Ví dụ)
-// app.use('/api/users', userRoutes);
+// 4. API Routes
+app.use('/api/users', userRoutes);
+app.use('/api/books', bookRoutes);
+app.use('/api/categories', categoryRoutes);
+app.use('/api/cart', cartRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/webhook', paymentRoutes);
+app.use('/api/discounts', discountRoutes);
+app.use('/api/images', imageRoutes);
+app.use('/api/reviews', reviewRoutes);
 
-// 5. Khởi động Server
+// 5. Error Middleware (Phải nằm dưới cùng sau tất cả các routes)
 const errorMiddleware = require('./src/middlewares/errorMiddleware');
-
-// Middleware hứng lỗi (Phải nằm dươí cùng sau tất cả các routes)
 app.use(errorMiddleware);
 
 // 6. Tích hợp Socket.io với Express App

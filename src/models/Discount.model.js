@@ -32,7 +32,11 @@ const discountSchema = new mongoose.Schema(
     isActive: {
       type: Boolean,
       default: true
-    }
+    },
+    applicableBooks: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Book'
+    }]
   },
   {
     timestamps: true
