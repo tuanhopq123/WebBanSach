@@ -35,6 +35,41 @@ const cassoWebhook = async (req, res) => {
   }
 };
 
+// (exports defined at bottom)
+
+// Simulate a payment for a given order (useful for local testing)
+const Order = require('../models/Order.model');
+
+const simulatePayment = async (req, res) => {
+  try {
+    const { orderId } = req.body;
+    if (!orderId) return res.status(400).json({ success: false, message: 'orderId is required' });
+
+    const order = await Order.findById(orderId);
+    if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
+
+    // Ensure the caller owns the order or is admin
+    if (order.user.toString() !== req.user._id.toString() && !(req.user.role && req.user.role.name === 'Admin')) {
+      return res.status(403).json({ success: false, message: 'Not authorized to simulate payment for this order' });
+    }
+
+    // Build a fake transaction payload that mimics Casso webhook transaction
+    const tx = {
+      description: order.paymentCode,
+      amount: order.totalAmount
+    };
+
+    const ok = await paymentService.processCassoWebhook(tx);
+    if (ok) return res.status(200).json({ success: true, message: 'Payment simulated and processed' });
+    return res.status(400).json({ success: false, message: 'Payment simulation failed' });
+  } catch (err) {
+    console.error('simulatePayment error', err);
+    return res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// expose simulatePayment together with cassoWebhook
 module.exports = {
-  cassoWebhook
+  cassoWebhook,
+  simulatePayment
 };

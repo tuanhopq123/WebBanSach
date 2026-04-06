@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Web Bán Sách — Danh mục</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background-color:var(--primary);">
+      <div class="container">
+        <a class="navbar-brand text-white" href="/">WebBanSach</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navMenu">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item"><a class="nav-link text-white" href="/">Sách</a></li>
+            <li class="nav-item"><a class="nav-link text-white" href="/cart.html">Giỏ hàng</a></li>
+            <li class="nav-item"><a class="nav-link text-white" href="/admin/index.html">Admin</a></li>
+            <li class="nav-item"><a class="nav-link text-white" href="/login.html">Đăng nhập</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <main class="container my-4">
+      <div class="row">
+        <aside class="col-lg-3 mb-4">
+          <div class="mb-3">
+            <input id="search-input" class="form-control" placeholder="Tìm theo tiêu đề hoặc tác giả" />
+          </div>
+          <div id="filters" class="card p-3">
+            <h6>Lọc</h6>
+            <div class="mb-2">
+              <label class="form-label small">Danh mục</label>
+              <select id="filter-category" class="form-select"><option value="">Tất cả</option></select>
+            </div>
+            <div class="mb-2">
+              <label class="form-label small">Tác giả</label>
+              <input id="filter-author" class="form-control" placeholder="Tên tác giả" />
+            </div>
+            <div class="mb-2 row">
+              <div class="col-6">
+                <label class="form-label small">Giá từ</label>
+                <input id="filter-minprice" type="number" min="0" class="form-control" placeholder="0" />
+              </div>
+              <div class="col-6">
+                <label class="form-label small">đến</label>
+                <input id="filter-maxprice" type="number" min="0" class="form-control" placeholder="" />
+              </div>
+            </div>
+            <div class="mb-2">
+              <label class="form-label small">Sắp xếp</label>
+              <select id="filter-sort" class="form-select">
+                <option value="createdAt:desc">Mới nhất</option>
+                <option value="price:asc">Giá: thấp → cao</option>
+                <option value="price:desc">Giá: cao → thấp</option>
+                <option value="title:asc">Tiêu đề A→Z</option>
+              </select>
+            </div>
+            <div class="d-flex gap-2">
+              <button id="apply-filters" class="btn btn-sm btn-primary flex-grow-1">Áp dụng</button>
+              <button id="clear-filters" class="btn btn-sm btn-outline-secondary">Xóa</button>
+            </div>
+          </div>
+        </aside>
+
+        <section class="col-lg-9">
+          <div id="book-grid" class="book-grid"></div>
+          <nav id="pagination" class="mt-4" aria-label="Page navigation"></nav>
+        </section>
+      </div>
+    </main>
+
+    <footer class="bg-light py-4 mt-auto">
+      <div class="container text-center small text-muted">© WebBanSach</div>
+    </footer>
+
+    <script type="module" src="js/ui.js"></script>
+    <script type="module" src="js/pages/books.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

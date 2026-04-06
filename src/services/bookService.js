@@ -44,17 +44,55 @@ const attachDiscountInfo = async (bookObj) => {
 };
 
 const getAllBooks = async (queryReq = {}) => {
-  const { page = 1, limit = 10, search = '' } = queryReq;
+  const {
+    page = 1,
+    limit = 10,
+    search = '',
+    category = '',
+    sortBy = 'createdAt',
+    sortOrder = 'desc',
+    minPrice = '',
+    maxPrice = '',
+    author = ''
+  } = queryReq;
   
   // Ép kiểu
   const pageNum = parseInt(page, 10) || 1;
   const limitNum = parseInt(limit, 10) || 10;
   
-  // Build query tìm kiếm bằng Regex
+  // Build query tìm kiếm
   const query = {};
+
+  // Tìm kiếm theo title hoặc author
   if (search) {
-    query.title = { $regex: search, $options: 'i' };
+    query.$or = [
+      { title: { $regex: search, $options: 'i' } },
+      { author: { $regex: search, $options: 'i' } }
+    ];
   }
+
+  // Lọc theo category (ObjectId)
+  if (category) {
+    query.category = category;
+  }
+
+  // Lọc theo tác giả
+  if (author) {
+    query.author = { $regex: author, $options: 'i' };
+  }
+
+  // Lọc theo khoảng giá
+  if (minPrice || maxPrice) {
+    query.price = {};
+    if (minPrice) query.price.$gte = parseFloat(minPrice);
+    if (maxPrice) query.price.$lte = parseFloat(maxPrice);
+  }
+
+  // Build sort object
+  const allowedSortFields = ['title', 'price', 'createdAt', 'author'];
+  const sortField = allowedSortFields.includes(sortBy) ? sortBy : 'createdAt';
+  const sortDirection = sortOrder === 'asc' ? 1 : -1;
+  const sortObj = { [sortField]: sortDirection };
 
   // Tính số dòng bỏ qua (Skip)
   const skip = (pageNum - 1) * limitNum;
@@ -62,7 +100,7 @@ const getAllBooks = async (queryReq = {}) => {
   // Query dữ liệu
   const books = await Book.find(query)
     .populate('category', 'name description')
-    .sort({ createdAt: -1 }) // Sách mới nhất lên đầu
+    .sort(sortObj)
     .skip(skip)
     .limit(limitNum);
 

@@ -16,10 +16,11 @@ const processCassoWebhook = async (transaction) => {
       return false;
     }
 
-    // Nếu parse description chữ hoa/thường lẫn lộn, để match chuẩn với DB nên lưu uppercase
-    const paymentCode = match[0].toUpperCase();
+    // Lấy paymentCode từ description (không ép case) và tìm order theo paymentCode CASE-INSENSITIVE
+    const paymentCode = match[0];
 
-    const order = await Order.findOne({ paymentCode });
+    // Use case-insensitive lookup because paymentCode stored in DB may differ in hex case
+    const order = await Order.findOne({ paymentCode: { $regex: `^${paymentCode}$`, $options: 'i' } });
     if (!order) {
       console.log('Không tìm thấy đơn hàng với paymentCode:', paymentCode);
       return false;

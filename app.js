@@ -14,9 +14,9 @@ const cartRoutes = require('./src/routes/cartRoutes');
 const orderRoutes = require('./src/routes/orderRoutes');
 const paymentRoutes = require('./src/routes/paymentRoutes');
 const discountRoutes = require('./src/routes/discountRoutes');
-const imageRoutes = require('./src/routes/imageRoutes');
 const reviewRoutes = require('./src/routes/reviewRoutes');
 const logMiddleware = require('./src/middlewares/logMiddleware');
+const notificationRoutes = require('./src/routes/notificationRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -27,7 +27,8 @@ app.use(cors()); // Cấu hình CORS
 app.use(morgan('dev')); // Logging HTTP requests
 app.use(logMiddleware); // Ghi log các action POST/PUT/DELETE/PATCH vào MongoDB
 
-// Serve static files (cho uploads)
+// Serve static files (frontend + uploads)
+app.use(express.static(path.join(__dirname, 'public')));
 app.use('/public/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
 // 2. Connect Database (MongoDB Atlas)
@@ -51,9 +52,10 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/webhook', paymentRoutes);
+app.use('/api/payments', paymentRoutes);
 app.use('/api/discounts', discountRoutes);
-app.use('/api/images', imageRoutes);
 app.use('/api/reviews', reviewRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // 5. Error Middleware (Phải nằm dưới cùng sau tất cả các routes)
 const errorMiddleware = require('./src/middlewares/errorMiddleware');

@@ -1,0 +1,25 @@
+:root{
+  --bg: #f6efe6;
+  --primary: #8b5e3c; /* brown */
+  --accent: #d9b58b;
+  --muted: #6b6b6b;
+}
+body{background:var(--bg);font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;color:#222}
+.book-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:1rem}
+.book-card{background:#fff;border-radius:.5rem;padding:.6rem;box-shadow:0 1px 3px rgba(0,0,0,.06);display:flex;flex-direction:column;height:100%}
+.book-card img{width:100%;height:180px;object-fit:cover;border-radius:.4rem}
+.book-card .title{font-weight:600;margin-top:.5rem}
+.book-card .author{font-size:.9rem;color:var(--muted)}
+.book-card .price{margin-top:.5rem;font-weight:700;color:var(--primary)}
+.book-card .badge-stock{margin-left:auto}
+
+/* Responsive breakpoints */
+@media (max-width:1200px){.book-grid{grid-template-columns:repeat(4,1fr)}}
+@media (max-width:992px){.book-grid{grid-template-columns:repeat(3,1fr)}}
+@media (max-width:768px){.book-grid{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:576px){.book-grid{grid-template-columns:repeat(1,1fr)}}
+
+.navbar-brand{font-weight:700}
+
+/* small utilities */
+.text-muted.small{font-size:.85rem}
