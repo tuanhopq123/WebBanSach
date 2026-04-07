@@ -1,6 +1,8 @@
 const Book = require('../models/Book.model');
 const Review = require('../models/Review.model');
 const Discount = require('../models/Discount.model');
+const fs = require('fs');
+const path = require('path');
 
 const createBook = async (data) => {
   return await Book.create(data);
@@ -160,12 +162,29 @@ const deleteBook = async (id) => {
 };
 
 const uploadBookImage = async (id, imageUrl) => {
+  const bookToUpdate = await Book.findById(id);
+  if (!bookToUpdate) throw new Error('Book not found');
+
+  // Xóa các file ảnh cũ trên server
+  if (bookToUpdate.images && bookToUpdate.images.length > 0) {
+    bookToUpdate.images.forEach((imgUrl) => {
+      const imgPath = path.join(__dirname, '../../', imgUrl);
+      if (fs.existsSync(imgPath)) {
+        try {
+          fs.unlinkSync(imgPath);
+        } catch (error) {
+          console.error(`Lỗi khi xóa file ảnh: ${imgPath}`, error);
+        }
+      }
+    });
+  }
+
   const book = await Book.findByIdAndUpdate(
     id,
-    { $push: { images: imageUrl } },
+    { $set: { images: [imageUrl] } },
     { new: true }
   );
-  if (!book) throw new Error('Book not found');
+  
   return book;
 };
 

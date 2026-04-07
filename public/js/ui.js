@@ -28,7 +28,9 @@ function buildUserMenu(user){
   const profile = document.createElement('li');
   profile.innerHTML = `<a class="dropdown-item" href="/profile.html">Hồ sơ</a>`;
   ul.appendChild(profile);
-  if (user.role && (user.role==='Admin' || user.role==='Staff')){
+  
+  const roleName = typeof user.role === 'object' && user.role !== null ? user.role.name : user.role;
+  if (roleName && (roleName === 'Admin' || roleName === 'Staff')){
     const admin = document.createElement('li');
     admin.innerHTML = `<a class="dropdown-item" href="/admin/index.html">Quản trị</a>`;
     ul.appendChild(admin);
@@ -43,12 +45,26 @@ function buildUserMenu(user){
 }
 
 export async function initUI(){
+  const isAdminRoute = window.location.pathname.startsWith('/admin');
+  const token = localStorage.getItem('wbs_token');
+  let user = null;
+
+  if (token) {
+    user = await fetchProfile();
+  }
+
+  if (isAdminRoute) {
+    const roleName = user ? (typeof user.role === 'object' && user.role !== null ? user.role.name : user.role) : null;
+    if (!roleName || (roleName !== 'Admin' && roleName !== 'Staff')) {
+      alert('Bạn không có quyền! Chức năng này chỉ dành cho Admin.');
+      window.location.href = '/';
+      return;
+    }
+  }
+
   const loginLink = document.querySelector('a[href="/login.html"]');
   if (!loginLink) return;
-  const token = localStorage.getItem('wbs_token');
-  if (!token) return; // not logged in
-  const user = await fetchProfile();
-  if (!user) return;
+  if (!user) return; // not logged in
 
   const nav = loginLink.closest('.navbar').querySelector('.navbar-nav');
   if (!nav) return;

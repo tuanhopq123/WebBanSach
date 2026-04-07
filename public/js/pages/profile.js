@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', async ()=>{
       <div class="card p-3">
         <h5>${user.username || user.email}</h5>
         <div>Email: ${user.email}</div>
-        <div>Role: ${user.role || ''}</div>
+        <div>Role: ${(typeof user.role === 'object' && user.role !== null) ? (user.role.name || '') : (user.role || '')}</div>
         <div class="mt-3"><a href="/" class="btn btn-secondary btn-sm">Về trang chủ</a> <a href="/cart.html" class="btn btn-primary btn-sm">Giỏ hàng</a></div>
       </div>
     `;

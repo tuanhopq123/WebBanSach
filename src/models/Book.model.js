@@ -33,7 +33,11 @@ const bookSchema = new mongoose.Schema(
     },
     images: [{
       type: String
-    }]
+    }],
+    isActive: { // Thêm trường này
+      type: Boolean,
+      default: true
+    }
   },
   {
     timestamps: true
