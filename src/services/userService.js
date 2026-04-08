@@ -72,6 +72,16 @@ const getUserById = async (id) => {
 };
 
 const updateUser = async (id, data) => {
+  // Bổ sung: Chuyển đổi Role từ chữ (VD: 'Admin') sang ObjectId
+  if (data.role && typeof data.role === 'string') {
+    const roleDoc = await Role.findOne({ name: data.role });
+    if (roleDoc) {
+      data.role = roleDoc._id; // Ép thành ID
+    } else {
+      delete data.role; // Tránh lỗi nếu truyền sai tên Role
+    }
+  }
+
   if (data.password) {
     const salt = await bcrypt.genSalt(10);
     data.password = await bcrypt.hash(data.password, salt);

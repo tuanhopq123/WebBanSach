@@ -1,6 +1,6 @@
 import { getCart, checkoutOrder, simulatePayment } from '../api.js';
 
-function currency(n){ return n!=null ? n.toLocaleString() + '₫' : ''; }
+function currency(n) { return n != null ? n.toLocaleString() + '₫' : ''; }
 
 function showToast(msg, type = 'success') {
   const existing = document.getElementById('toast-container');
@@ -23,14 +23,15 @@ function showToast(msg, type = 'success') {
   setTimeout(() => container.remove(), 3500);
 }
 
-async function renderCheckout(){
+async function renderCheckout() {
   const root = document.getElementById('checkout-root');
   if (!root) return;
-  
-  try{
+
+  try {
     const res = await getCart();
-    const cart = (res && res.data) ? res.data : (Array.isArray(res)? res : (res && res.cart ? res.cart : null));
-    if (!cart || !cart.items || cart.items.length===0){
+    const cart = (res && res.data) ? res.data : (Array.isArray(res) ? res : (res && res.cart ? res.cart : null));
+
+    if (!cart || !cart.items || cart.items.length === 0) {
       root.innerHTML = `
         <div class="checkout-card text-center py-5">
           <h1 class="display-3 mb-3">🛒</h1>
@@ -43,10 +44,10 @@ async function renderCheckout(){
     }
 
     let total = 0;
-    const itemsHtml = cart.items.map(it=>{
-      const title = it.book? (it.book.title||'') : (it.title||'');
-      const author = it.book? (it.book.author||'') : '';
-      const price = it.book? (it.book.discountedPrice || it.book.price || 0) : (it.price||0);
+    const itemsHtml = cart.items.map(it => {
+      const title = it.book ? (it.book.title || '') : (it.title || '');
+      const author = it.book ? (it.book.author || '') : '';
+      const price = it.book ? (it.book.discountedPrice || it.book.price || 0) : (it.price || 0);
       const qty = it.quantity || 1;
       total += price * qty;
       return `
@@ -55,7 +56,7 @@ async function renderCheckout(){
             <div class="fw-semibold text-dark">${title} <span class="badge bg-secondary ms-1">x${qty}</span></div>
             <div class="small text-muted">${author}</div>
           </div>
-          <div class="fw-bold">${currency(price*qty)}</div>
+          <div class="fw-bold">${currency(price * qty)}</div>
         </div>
       `;
     }).join('');
@@ -115,81 +116,88 @@ async function renderCheckout(){
       </form>
     `;
 
-    document.getElementById('checkout-form').addEventListener('submit', async (e)=>{
+    document.getElementById('checkout-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const address = document.getElementById('ship-address').value.trim();
       const methodRadios = document.getElementsByName('payment-method');
       let method = 'bank';
       for (const rad of methodRadios) {
-          if(rad.checked) { method = rad.value; break; }
+        if (rad.checked) { method = rad.value; break; }
       }
-      
+
       const btn = document.getElementById('btn-submit');
       btn.disabled = true;
       btn.textContent = 'ĐANG XỬ LÝ...';
       const resultBox = document.getElementById('checkout-result');
-      
-      try{
+
+      try {
         const paymentMethod = method === 'cod' ? 'COD' : 'BANK';
         const resp = await checkoutOrder({ shippingAddress: address, paymentMethod });
         const payload = (resp && resp.data) ? resp.data : resp;
 
         showToast('Đặt hàng thành công! 🎉');
 
-        // If backend returned a QR code URL (bank transfer flow), show QR + simulate option
-        if (payload && payload.qrCodeUrl) {
+        // PHÂN NHÁNH GIAO DIỆN THEO PHƯƠNG THỨC THANH TOÁN
+        if (paymentMethod === 'BANK') {
+          // Dùng QR giả lập từ API
+          const dummyQR = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=MA_DON_HANG_${payload.paymentCode}`;
+
           resultBox.innerHTML = `
-            <div class="qr-box shadow-sm mb-3">
+            <div class="qr-box shadow-sm mb-3 text-center p-4 border rounded bg-white">
               <h5 class="fw-bold text-primary mb-1">Thanh toán đơn hàng</h5>
-              <p class="text-muted small">Quét mã QR dưới đây bằng ứng dụng ngân hàng</p>
-              <img src="/uploads/qr-tran-dinh-thuan.jpg" alt="Thanh toán QR" class="img-fluid rounded mb-3" style="max-height: 250px;">
-              <div class="bg-light p-2 rounded small fw-semibold">
+              <p class="text-muted small mb-3">Quét mã QR dưới đây bằng ứng dụng ngân hàng</p>
+              <img src="${dummyQR}" alt="Thanh toán QR" class="img-fluid rounded mb-3 shadow-sm" style="max-height: 200px;">
+              <div class="bg-light p-2 rounded small fw-semibold mx-auto" style="max-width: 80%;">
                 Mã đơn: <span class="text-danger">${payload.paymentCode || ''}</span>
               </div>
-              <button id="simulate-pay" class="btn btn-outline-success btn-sm w-100 mt-3 fw-bold">(TEST) Kích hoạt giao dịch</button>
+              <button id="simulate-pay" class="btn btn-outline-success w-100 mt-4 fw-bold">(TEST) Kích hoạt giao dịch</button>
             </div>
             <div id="simulate-result"></div>
           `;
 
-          document.getElementById('simulate-pay').addEventListener('click', async ()=>{
+          document.getElementById('simulate-pay').addEventListener('click', async () => {
             const simBtn = document.getElementById('simulate-pay');
             simBtn.disabled = true;
             simBtn.textContent = 'Đang xử lý...';
-            try{
+            try {
               const orderId = payload._id || payload.id;
               const s = await simulatePayment(orderId);
               const msg = (s && s.message) ? s.message : (s && s.success ? 'Giao dịch thành công!' : 'Không có phản hồi');
               showToast(msg, 'success');
               document.getElementById('simulate-result').innerHTML = `<div class="alert alert-success fs-6 fw-semibold text-center border-0 shadow-sm mt-2">✅ ${msg}</div>`;
-              setTimeout(()=> { window.location.href = '/profile.html'; }, 2000);
-            }catch(simErr){
+              setTimeout(() => { window.location.href = '/my-orders.html'; }, 2000);
+            } catch (simErr) {
               console.error(simErr);
               showToast('Xác nhận thanh toán thất bại', 'error');
               simBtn.disabled = false;
               simBtn.textContent = '(TEST) Thử lại';
             }
           });
-        } else {
+
+        } else if (paymentMethod === 'COD') {
+          // COD Flow - Báo thành công và chuyển hướng
           resultBox.innerHTML = `
-            <div class="alert alert-success border-0 shadow-sm text-center">
-              <h5>🎉 Đặt hàng thành công!</h5>
-              Mã giao dịch: <strong>${payload.paymentCode || payload.payment_code || ''}</strong><br>
-              <small class="text-muted">Chúng tôi sẽ sớm giao hàng cho bạn.</small>
-              <div class="mt-3">
-                <a href="/profile.html" class="btn btn-success btn-sm px-4 rounded-pill">Kho đơn hàng</a>
+            <div class="alert alert-success border-0 shadow-sm text-center p-4">
+              <h4 class="mb-3">🎉 Đặt hàng thành công!</h4>
+              Bạn đã chọn thanh toán khi nhận hàng (COD).<br>
+              Mã đơn: <strong>${payload._id || payload.id}</strong><br>
+              <small class="text-muted d-block mt-2">Chúng tôi sẽ sớm giao hàng cho bạn.</small>
+              <div class="mt-4">
+                <a href="/my-orders.html" class="btn btn-success px-4 rounded-pill fw-semibold">Xem Kho Đơn Hàng</a>
               </div>
             </div>`;
         }
-      }catch(err){
+
+      } catch (err) {
         console.error(err);
-        showToast('Thanh toán thất bại', 'error');
+        showToast('Đặt hàng thất bại', 'error');
         resultBox.innerHTML = `<div class="alert alert-danger shadow-sm border-0">❌ Lỗi: ${err.message || 'Không thể tạo đơn hàng'}</div>`;
         btn.disabled = false;
         btn.textContent = 'XÁC NHẬN ĐẶT HÀNG';
       }
     });
 
-  }catch(err){
+  } catch (err) {
     console.error(err);
     root.innerHTML = '<div class="alert alert-danger shadow-sm py-4 text-center">❌ Không thể tải thông tin thanh toán. Vui lòng thử lại.</div>';
   }

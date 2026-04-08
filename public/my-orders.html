@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Lịch Sử Đơn Hàng — Bookstore</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css" />
+    <style>
+        body {
+            background: #f8fafc;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+        }
+
+        .order-tabs .nav-link {
+            color: #64748b;
+            font-weight: 600;
+            padding: 1rem 1.5rem;
+            border-bottom: 3px solid transparent;
+            border-radius: 0;
+        }
+
+        .order-tabs .nav-link:hover {
+            color: #3b82f6;
+        }
+
+        .order-tabs .nav-link.active {
+            color: #4f46e5;
+            border-bottom-color: #4f46e5;
+            background: transparent;
+        }
+
+        .order-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+            margin-bottom: 1.5rem;
+            border: 1px solid #f1f5f9;
+        }
+
+        .item-card {
+            border: 1px solid #f1f5f9;
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 0.75rem;
+            background: #fafafa;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark shadow-sm">
+        <div class="container">
+            <a class="navbar-brand text-white fw-bold" href="/">📚 Bookstore</a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link text-white" href="/">Cửa hàng</a></li>
+                    <li class="nav-item"><a class="nav-link text-white" href="/cart.html">Giỏ hàng</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div style="background: linear-gradient(135deg, #e0e7ff 0%, #f3e8ff 100%); padding: 2rem 0;">
+        <div class="container d-flex justify-content-between align-items-center">
+            <h2 class="fw-bold text-dark mb-0">📦 Lịch Sử Đơn Hàng</h2>
+            <a href="/profile.html" class="btn btn-outline-primary fw-bold rounded-pill bg-white px-4">← Quay lại Hồ
+                sơ</a>
+        </div>
+    </div>
+
+    <main class="container my-4">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+            <ul class="nav nav-tabs order-tabs d-flex text-center border-bottom-0" id="orderFilters">
+                <li class="nav-item flex-fill"><a class="nav-link active" href="#" data-status="All">Tất cả</a></li>
+                <li class="nav-item flex-fill"><a class="nav-link" href="#" data-status="Pending">Chờ xử lý</a></li>
+                <li class="nav-item flex-fill"><a class="nav-link" href="#" data-status="Processing">Đang chuẩn bị</a>
+                </li>
+                <li class="nav-item flex-fill"><a class="nav-link" href="#" data-status="Shipped">Đang giao</a></li>
+                <li class="nav-item flex-fill"><a class="nav-link" href="#" data-status="Delivered">Đã giao (Hoàn
+                        thành)</a></li>
+                <li class="nav-item flex-fill"><a class="nav-link" href="#" data-status="Cancelled">Đã hủy</a></li>
+            </ul>
+        </div>
+
+        <div id="full-orders-root">
+            <div class="text-center py-5 my-5 text-muted">Đang tải lịch sử đơn hàng...</div>
+        </div>
+    </main>
+
+    <div class="modal fade" id="reviewModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow" style="border-radius: 16px;">
+                <div class="modal-header border-0 bg-light rounded-top" style="border-radius: 16px 16px 0 0;">
+                    <h5 class="modal-title fw-bold" id="reviewModalLabel">🌟 Đánh giá sản phẩm</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div id="review-book-info" class="d-flex align-items-center gap-3 mb-4 p-3 rounded"
+                        style="background:#f8fafc; border:1px solid #e2e8f0;"></div>
+                    <form id="profile-review-form">
+                        <input type="hidden" id="review-book-id">
+                        <input type="hidden" id="review-order-id">
+                        <input type="hidden" id="review-update-id">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small text-muted">Chấm điểm (1-5 sao)</label>
+                            <select id="review-rating" class="form-select" style="border-radius:10px;">
+                                <option value="5" selected>5 Sao - Tuyệt vời</option>
+                                <option value="4">4 Sao - Rất tốt</option>
+                                <option value="3">3 Sao - Bình thường</option>
+                                <option value="2">2 Sao - Kém</option>
+                                <option value="1">1 Sao - Rất tệ</option>
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold small text-muted">Chia sẻ trải nghiệm của bạn</label>
+                            <textarea id="review-comment" class="form-control" rows="4" style="border-radius:10px;"
+                                required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 fw-bold py-2" style="border-radius:10px;">GỬI
+                            ĐÁNH GIÁ</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/ui.js"></script>
+    <script type="module" src="js/pages/my-orders.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

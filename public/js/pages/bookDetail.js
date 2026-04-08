@@ -1,6 +1,6 @@
-import { getBookById, createReview, addToCart } from '../api.js';
+import { getBookById, createReview, addToCart, apiGet } from '../api.js';
 
-function getQueryParam(name){
+function getQueryParam(name) {
   const u = new URL(window.location.href);
   return u.searchParams.get(name);
 }
@@ -26,19 +26,19 @@ function showToast(msg, type = 'success') {
   setTimeout(() => container.remove(), 3500);
 }
 
-function buildCarousel(images){
-  if (!images || images.length === 0) return `<img src="https://via.placeholder.com/400x550?text=No+Img" class="w-100 rounded-4 shadow-sm" style="object-fit:cover;height:550px;" />`;
+function buildCarousel(images) {
+  if (!images || images.length === 0) return `<img src="https://via.placeholder.com/400x550?text=No+Img" class="w-100 rounded-4 shadow-sm" style="max-width: 100%; height: auto; max-height: 550px; object-fit: contain; background-color: #f8fafc;" />`;
   const id = `carousel-${Date.now()}`;
-  const inner = images.map((img, idx)=>`
-    <div class="carousel-item ${idx===0? 'active':''} text-center">
-      <img src="${img.startsWith('/')? img : '/uploads/'+img}" class="d-block mx-auto rounded-4 shadow-sm" style="height:550px;object-fit:contain;background-color:#f8fafc;" />
+  const inner = images.map((img, idx) => `
+    <div class="carousel-item ${idx === 0 ? 'active' : ''} text-center">
+      <img src="${img.startsWith('/') ? img : '/uploads/' + img}" class="d-block mx-auto rounded-4 shadow-sm" style="max-width: 100%; height: auto; max-height: 550px; object-fit: contain; background-color: #f8fafc;" />
     </div>
   `).join('');
-  
-  if(images.length === 1) {
+
+  if (images.length === 1) {
     return `<div class="text-center book-image-carousel">${inner}</div>`;
   }
-  
+
   return `
     <div id="${id}" class="carousel slide book-image-carousel" data-bs-ride="carousel">
       <div class="carousel-inner">${inner}</div>
@@ -48,34 +48,73 @@ function buildCarousel(images){
   `;
 }
 
-function renderReviews(reviews){
+// HÀM TÍNH TOÁN VÀ RENDER SAO TRUNG BÌNH
+function renderAverageRating(reviews) {
+  if (!reviews || reviews.length === 0) {
+    return `
+            <div class="d-flex align-items-center mb-3">
+                <span class="text-warning fs-5 me-2" style="letter-spacing: 2px;">☆☆☆☆☆</span>
+                <span class="text-muted small">(Chưa có đánh giá)</span>
+            </div>
+        `;
+  }
+
+  const total = reviews.reduce((sum, r) => sum + r.rating, 0);
+  const avg = (total / reviews.length).toFixed(1);
+  const roundedAvg = Math.round(avg);
+
+  const stars = '★'.repeat(roundedAvg) + '☆'.repeat(5 - roundedAvg);
+
+  return `
+        <div class="d-flex align-items-center mb-3">
+            <span class="text-warning fs-5 me-2" style="letter-spacing: 2px;">${stars}</span>
+            <span class="fw-bold me-2 fs-6">${avg}</span>
+            <a href="#reviews-root" class="text-primary small text-decoration-none">(${reviews.length} đánh giá)</a>
+        </div>
+    `;
+}
+
+function renderReviews(reviews) {
   if (!reviews || reviews.length === 0) return '<div class="text-muted text-center py-4">Chưa có đánh giá nào cho cuốn sách này. Hãy là người đầu tiên!</div>';
   return reviews.map(r => {
     const stars = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
     return `
       <div class="review-card">
         <div class="d-flex justify-content-between mb-2 align-items-center">
-          <strong class="text-dark">${r.user? r.user.username : 'Khách hàng ẩn danh'}</strong>
+          <strong class="text-dark">${r.user ? r.user.username : 'Khách hàng ẩn danh'}</strong>
           <span class="text-muted small">${new Date(r.createdAt).toLocaleDateString('vi-VN')}</span>
         </div>
-        <div class="stars mb-2" style="font-size:1.1rem;letter-spacing:2px;">${stars}</div>
+        <div class="text-warning mb-2" style="font-size:1.1rem;letter-spacing:2px;">${stars}</div>
         <p class="mb-0 text-secondary">${r.comment || '<i>Không có nội dung nhận xét</i>'}</p>
       </div>
     `;
   }).join('');
 }
 
-async function loadDetail(){
+async function loadDetail() {
   const id = getQueryParam('id');
   const root = document.getElementById('book-detail');
-  if (!id){ root.innerHTML = '<div class="alert alert-warning mt-4">ID sách không hợp lệ. Vui lòng quay lại cửa hàng.</div>'; return; }
-  
-  try{
+  if (!id) { root.innerHTML = '<div class="alert alert-warning mt-4">ID sách không hợp lệ. Vui lòng quay lại cửa hàng.</div>'; return; }
+
+  try {
     const res = await getBookById(id);
     const payload = (res && res.data) ? res.data : res;
     const book = payload;
     const images = book.images || [];
     const reviews = book.reviews || [];
+
+    let isAdminOrStaff = false;
+    const token = localStorage.getItem('wbs_token');
+    if (token) {
+      try {
+        const pRes = await apiGet('/api/users/profile');
+        if (pRes && pRes.data) {
+          const uRole = pRes.data.role;
+          const roleName = typeof uRole === 'object' && uRole !== null ? uRole.name : uRole;
+          isAdminOrStaff = (roleName === 'Admin' || roleName === 'Staff');
+        }
+      } catch (e) { console.warn("Lỗi xác thực quyền mua hàng"); }
+    }
 
     const isDiscounted = book.discountedPrice && book.discountedPrice < book.price;
     const priceHtml = isDiscounted
@@ -100,10 +139,13 @@ async function loadDetail(){
               </ol>
             </nav>
             
-            <h1 class="book-title">${book.title || 'Đang cập nhật'}</h1>
-            <p class="book-author">Tác giả: <strong>${book.author || 'Đang cập nhật'}</strong></p>
+            <h1 class="book-title mb-2">${book.title || 'Đang cập nhật'}</h1>
             
-            <div class="book-price-box d-flex align-items-center">
+            ${renderAverageRating(reviews)}
+            
+            <p class="book-author border-bottom pb-3">Tác giả: <strong class="text-dark">${book.author || 'Đang cập nhật'}</strong></p>
+            
+            <div class="book-price-box d-flex align-items-center mt-3">
               ${priceHtml}
             </div>
             
@@ -128,51 +170,60 @@ async function loadDetail(){
         </div>
       </div>
 
-      <div class="reviews-section">
+      <div id="reviews-root-anchor" class="reviews-section">
         <h4 class="fw-bold mb-4">Đánh giá từ độc giả</h4>
         <div id="reviews-root">${renderReviews(reviews)}</div>
       </div>
     `;
 
-    // Qty logic
     const qtyInput = document.getElementById('qty-input');
     const maxStock = book.stockQuantity || 1;
-    document.getElementById('btn-decr-qty').addEventListener('click', () => {
-      let v = parseInt(qtyInput.value) || 1;
-      if (v > 1) qtyInput.value = v - 1;
-    });
-    document.getElementById('btn-incr-qty').addEventListener('click', () => {
-      let v = parseInt(qtyInput.value) || 1;
-      if (v < maxStock) qtyInput.value = v + 1;
-    });
-
     const addCartBtn = document.getElementById('add-cart-btn');
-    if (!book.stockQuantity || book.stockQuantity <= 0) {
+    const decrBtn = document.getElementById('btn-decr-qty');
+    const incrBtn = document.getElementById('btn-incr-qty');
+
+    if (isAdminOrStaff) {
+      addCartBtn.disabled = true;
+      addCartBtn.innerHTML = '🛡️ ADMIN KHÔNG THỂ MUA HÀNG';
+      addCartBtn.classList.replace('btn-add-cart', 'btn-secondary');
+      qtyInput.disabled = true;
+      decrBtn.disabled = true;
+      incrBtn.disabled = true;
+    }
+    else if (!book.stockQuantity || book.stockQuantity <= 0) {
+      addCartBtn.disabled = true;
+      addCartBtn.innerHTML = 'HẾT HÀNG';
+      addCartBtn.classList.replace('btn-add-cart', 'btn-secondary');
+    }
+    else {
+      decrBtn.addEventListener('click', () => {
+        let v = parseInt(qtyInput.value) || 1;
+        if (v > 1) qtyInput.value = v - 1;
+      });
+      incrBtn.addEventListener('click', () => {
+        let v = parseInt(qtyInput.value) || 1;
+        if (v < maxStock) qtyInput.value = v + 1;
+      });
+
+      addCartBtn.addEventListener('click', async () => {
         addCartBtn.disabled = true;
-        addCartBtn.innerHTML = 'HẾT HÀNG';
-        addCartBtn.classList.replace('btn-add-cart', 'btn-secondary');
-    } else {
-        addCartBtn.addEventListener('click', async ()=>{
-          addCartBtn.disabled = true;
-          const originalText = addCartBtn.innerHTML;
-          addCartBtn.textContent = 'ĐANG THÊM...';
-          const qty = Number(qtyInput.value||1);
-          try{
-            await addToCart({ bookId: book._id || book.id, quantity: qty });
-            showToast('Thêm vào giỏ hàng thành công! 🛒');
-          }catch(err){
-            console.error(err);
-            showToast('Không thể thêm vào giỏ hàng: ' + (err.message || ''), 'error');
-          }finally{
-            addCartBtn.disabled = false;
-            addCartBtn.innerHTML = originalText;
-          }
-        });
+        const originalText = addCartBtn.innerHTML;
+        addCartBtn.textContent = 'ĐANG THÊM...';
+        const qty = Number(qtyInput.value || 1);
+        try {
+          await addToCart({ bookId: book._id || book.id, quantity: qty });
+          showToast('Thêm vào giỏ hàng thành công! 🛒');
+        } catch (err) {
+          console.error(err);
+          showToast('Không thể thêm vào giỏ hàng: ' + (err.message || ''), 'error');
+        } finally {
+          addCartBtn.disabled = false;
+          addCartBtn.innerHTML = originalText;
+        }
+      });
     }
 
-
-
-  }catch(err){
+  } catch (err) {
     console.error(err);
     root.innerHTML = '<div class="alert alert-danger mt-4">Lỗi: Không tìm thấy sách này hoặc đã bị xóa.</div>';
   }

@@ -17,4 +17,7 @@ router.route('/:id')
 router.route('/:id/status')
   .put(checkRole('Admin', 'Staff'), orderController.updateStatus);
 
+router.route('/')
+  .get(checkRole('Admin', 'Staff'), orderController.getAllOrders);
+
 module.exports = router;

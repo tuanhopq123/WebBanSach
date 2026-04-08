@@ -3,7 +3,7 @@ const orderService = require('../services/orderService');
 const checkout = async (req, res) => {
   try {
     const { shippingAddress, paymentMethod } = req.body;
-    
+
     if (!shippingAddress) {
       return res.status(400).json({ success: false, message: 'Shipping address is required' });
     }
@@ -27,7 +27,7 @@ const getMyOrders = async (req, res) => {
 const getOrderById = async (req, res) => {
   try {
     const order = await orderService.getOrderById(req.params.id);
-    
+
     if (order.user._id.toString() !== req.user._id.toString() && req.user.role.name !== 'Admin') {
       return res.status(403).json({ success: false, message: 'Not authorized to view this order' });
     }
@@ -48,9 +48,19 @@ const updateStatus = async (req, res) => {
   }
 };
 
+const getAllOrders = async (req, res) => {
+  try {
+    const orders = await orderService.getAllOrders();
+    res.status(200).json({ success: true, data: orders });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   checkout,
   getMyOrders,
   getOrderById,
-  updateStatus
+  updateStatus,
+  getAllOrders
 };

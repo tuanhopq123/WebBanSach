@@ -4,7 +4,7 @@
   "description": "Web Bán Sách Đồ Án Ngôn Ngữ Phát Triền Phần Mềm",
   "main": "app.js",
   "scripts": {
-    "start": "nodemon ./app.js"
+    "start": "node src/seeds/seedUsers.js && nodemon ./app.js"
   },
   "repository": {
     "type": "git",
