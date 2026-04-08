@@ -125,6 +125,14 @@ export async function createReview(payload){
   return apiPost('/api/reviews', payload);
 }
 
+export async function updateReview(id, payload){
+  return apiPut(`/api/reviews/${id}`, payload);
+}
+
+export async function getMyReviews(){
+  return apiGet('/api/reviews/my-reviews');
+}
+
 export async function login(credentials){
   const res = await apiPost('/api/users/login', credentials);
   // support multiple shapes: { accessToken }, { token }, { data: { accessToken } }
@@ -191,6 +199,10 @@ export async function getOrderById(id){
 
 export async function simulatePayment(orderId){
   return apiPost('/api/payments/simulate', { orderId });
+}
+
+export async function updateOrderStatus(id, status){
+  return apiPut(`/api/orders/${id}/status`, { status });
 }
 
 /* Discounts */

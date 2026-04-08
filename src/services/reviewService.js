@@ -3,21 +3,24 @@ const Book = require('../models/Book.model');
 
 // Tạo đánh giá cho sách
 const createReview = async (userId, data) => {
-  const { bookId, rating, comment } = data;
+  const { bookId, orderId, rating, comment } = data;
 
   // Kiểm tra sách tồn tại
   const book = await Book.findById(bookId);
   if (!book) throw new Error('Book not found');
 
-  // Kiểm tra user đã review sách này chưa (unique index: user + book)
-  const existing = await Review.findOne({ user: userId, book: bookId });
+  if (!orderId) throw new Error('Order ID is required to match your purchase');
+
+  // Kiểm tra user đã review sách này trong đơn hàng này chưa
+  const existing = await Review.findOne({ user: userId, book: bookId, orderId });
   if (existing) {
-    throw new Error('Bạn đã đánh giá cuốn sách này rồi');
+    throw new Error('Bạn đã đánh giá cuốn sách này cho đơn hàng này rồi. Vui lòng sử dụng tính năng Sửa đánh giá.');
   }
 
   const review = await Review.create({
     user: userId,
     book: bookId,
+    orderId,
     rating,
     comment
   });

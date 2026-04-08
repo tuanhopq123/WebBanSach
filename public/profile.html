@@ -3,20 +3,106 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Hồ sơ</title>
+    <title>Hồ Sơ Của Tôi — Bookstore</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css" />
+    <style>
+      body { background: #f8fafc; font-family: 'Inter', sans-serif; }
+      .navbar { background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); }
+      
+      .profile-header-card {
+        background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+        border-radius: 20px; color: #fff; padding: 2.5rem;
+        box-shadow: 0 10px 30px rgba(37,99,235,.25);
+        margin-bottom: 2rem; border: none;
+      }
+      .profile-avatar {
+        width: 80px; height: 80px; border-radius: 50%;
+        background: rgba(255,255,255,0.2);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 2rem; font-weight: bold; border: 2px solid rgba(255,255,255,0.5);
+      }
+      
+      .order-card {
+        background: #fff; border-radius: 16px; padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+        margin-bottom: 1.5rem; border: 1px solid #f1f5f9;
+        transition: transform .2s;
+      }
+      .order-card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,.08); }
+      .order-header { border-bottom: 1px dashed #e2e8f0; padding-bottom: 0.75rem; margin-bottom: 1rem; }
+      
+      .item-card { border: 1px solid #f1f5f9; padding: 1rem; border-radius: 12px; margin-bottom: 0.75rem; background: #fafafa; }
+      .btn-review { font-size: 0.85rem; padding: 0.4rem 0.8rem; border-radius: 8px; font-weight: 600; }
+      
+      .nav-pills .nav-link { color: #64748b; font-weight: 600; border-radius: 10px; padding: 0.75rem 1.25rem; }
+      .nav-pills .nav-link.active { background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%); color: #fff; box-shadow: 0 4px 12px rgba(79,70,229,.2); }
+    </style>
   </head>
   <body>
-    <nav class="navbar navbar-expand-lg navbar-dark" style="background-color:var(--primary);">
+    <nav class="navbar navbar-expand-lg navbar-dark shadow-sm">
       <div class="container">
-        <a class="navbar-brand text-white" href="/">WebBanSach</a>
+        <a class="navbar-brand text-white fw-bold" href="/">📚 Bookstore</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navMenu">
+          <ul class="navbar-nav ms-auto" id="dynamic-nav">
+            <li class="nav-item"><a class="nav-link text-white" href="/">Cửa hàng</a></li>
+            <li class="nav-item"><a class="nav-link text-white" href="/cart.html">Giỏ hàng</a></li>
+          </ul>
+        </div>
       </div>
     </nav>
-    <main class="container my-4">
-      <h3>Hồ sơ người dùng</h3>
-      <div id="profile-root">Thông tin hồ sơ sẽ hiển thị ở đây.</div>
+    <main class="container my-5">
+      <div id="profile-root">
+        <div class="text-center py-5 my-5 text-muted">Đang tải hồ sơ...</div>
+      </div>
     </main>
+    <footer class="bg-dark py-4 mt-auto text-white">
+      <div class="container text-center small opacity-75">
+        <p class="mb-1 fw-bold fs-6">📚 Bookstore</p>
+        <div>© 2026 Bản quyền thuộc về WebBanSach.</div>
+      </div>
+    </footer>
+
+    <!-- Review Modal Overlay -->
+    <div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow" style="border-radius: 16px;">
+          <div class="modal-header border-0 bg-light rounded-top" style="border-radius: 16px 16px 0 0;">
+            <h5 class="modal-title fw-bold" id="reviewModalLabel">🌟 Đánh giá sản phẩm</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body p-4">
+            <div id="review-book-info" class="d-flex align-items-center gap-3 mb-4 p-3 rounded" style="background:#f8fafc; border:1px solid #e2e8f0;">
+              <!-- Dynamic book info will be injected here -->
+            </div>
+            <form id="profile-review-form">
+              <input type="hidden" id="review-book-id">
+              <input type="hidden" id="review-order-id">
+              <input type="hidden" id="review-update-id">
+              <div class="mb-3">
+                <label class="form-label fw-semibold small text-muted">Chấm điểm (1-5 sao)</label>
+                <select id="review-rating" class="form-select" required style="border-radius:10px;">
+                  <option value="5" selected>5 Sao - Tuyệt vời</option>
+                  <option value="4">4 Sao - Rất tốt</option>
+                  <option value="3">3 Sao - Bình thường</option>
+                  <option value="2">2 Sao - Kém</option>
+                  <option value="1">1 Sao - Rất tệ</option>
+                </select>
+              </div>
+              <div class="mb-4">
+                <label class="form-label fw-semibold small text-muted">Chia sẻ trải nghiệm của bạn</label>
+                <textarea id="review-comment" class="form-control" placeholder="Chất lượng sách ra sao, nội dung như thế nào?..." rows="4" style="border-radius:10px;" required></textarea>
+              </div>
+              <button type="submit" class="btn btn-primary w-100 fw-bold" style="border-radius:10px; padding: 0.75rem;">GỬI ĐÁNH GIÁ</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script type="module" src="js/ui.js"></script>
     <script type="module" src="js/pages/profile.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

@@ -104,7 +104,12 @@ const checkout = async (userId, shippingAddress, paymentMethod) => {
 };
 
 const getMyOrders = async (userId) => {
-  return await Order.find({ user: userId }).sort({ createdAt: -1 });
+  const orders = await Order.find({ user: userId }).sort({ createdAt: -1 }).lean();
+  for (let order of orders) {
+    const items = await OrderItem.find({ order: order._id }).populate('book', 'title author price images');
+    order.items = items;
+  }
+  return orders;
 };
 
 const getOrderById = async (orderId) => {
@@ -116,8 +121,17 @@ const getOrderById = async (orderId) => {
   return { ...order.toObject(), items };
 };
 
+const updateOrderStatus = async (orderId, status) => {
+  const order = await Order.findById(orderId);
+  if (!order) throw new Error('Order not found');
+  order.status = status;
+  await order.save();
+  return order;
+};
+
 module.exports = {
   checkout,
   getMyOrders,
-  getOrderById
+  getOrderById,
+  updateOrderStatus
 };

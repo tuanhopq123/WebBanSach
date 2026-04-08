@@ -21,6 +21,11 @@ const reviewSchema = new mongoose.Schema(
     comment: {
       type: String,
       trim: true
+    },
+    orderId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Order',
+      required: true
     }
   },
   {
@@ -28,7 +33,7 @@ const reviewSchema = new mongoose.Schema(
   }
 );
 
-// Mỗi user chỉ được review 1 cuốn sách 1 lần
-reviewSchema.index({ user: 1, book: 1 }, { unique: true });
+// Mỗi user chỉ được review 1 cuốn sách 1 lần cho mỗi đơn hàng
+reviewSchema.index({ user: 1, book: 1, orderId: 1 }, { unique: true });
 
 module.exports = mongoose.model('Review', reviewSchema);

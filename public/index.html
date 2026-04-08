@@ -6,17 +6,69 @@
     <title>Web Bán Sách — Danh mục</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css" />
+    <style>
+      body { background: #f8fafc; font-family: 'Inter', sans-serif; }
+      .navbar { background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); }
+      .book-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1.5rem;
+      }
+      .filter-card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        border: none;
+        position: sticky;
+        top: 2rem;
+      }
+      .filter-title {
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #f1f5f9;
+        color: #1e293b;
+      }
+      .form-control, .form-select {
+        border-radius: 10px;
+        padding: 0.6rem 1rem;
+        border: 1px solid #e2e8f0;
+        font-size: 0.9rem;
+      }
+      .form-control:focus, .form-select:focus {
+        box-shadow: 0 0 0 3px rgba(79,70,229,.1);
+        border-color: #4f46e5;
+      }
+      .btn-primary {
+        background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+      }
+      .btn-primary:hover {
+        box-shadow: 0 4px 12px rgba(79,70,229,.3);
+        transform: translateY(-1px);
+      }
+      
+      /* Book Card override for a more premium look */
+      .card { border: none; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,.04); transition: transform 0.2s, box-shadow 0.2s; overflow: hidden;}
+      .card:hover { transform: translateY(-4px); box-shadow: 0 12px 25px rgba(0,0,0,.1); }
+      .card-img-top { height: 260px; object-fit: cover; border-bottom: 1px solid #f1f5f9; }
+      .card-title { font-weight: 700; font-size: 1.05rem; margin-bottom: 0.25rem; color: #1e293b; }
+      .card-text { font-size: 0.85rem; color: #64748b; }
+      .price-tag { font-weight: 700; color: #ef4444; font-size: 1.15rem; }
+    </style>
   </head>
   <body>
-    <nav class="navbar navbar-expand-lg navbar-dark" style="background-color:var(--primary);">
+    <nav class="navbar navbar-expand-lg navbar-dark shadow-sm">
       <div class="container">
-        <a class="navbar-brand text-white" href="/">WebBanSach</a>
+        <a class="navbar-brand text-white fw-bold" href="/">📚 Bookstore</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
           <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navMenu">
           <ul class="navbar-nav ms-auto">
-            <li class="nav-item"><a class="nav-link text-white" href="/">Sách</a></li>
+            <li class="nav-item"><a class="nav-link text-white active" href="/">Sách</a></li>
             <li class="nav-item"><a class="nav-link text-white" href="/cart.html">Giỏ hàng</a></li>
             <li class="nav-item"><a class="nav-link text-white" href="/login.html">Đăng nhập</a></li>
           </ul>
@@ -24,34 +76,44 @@
       </div>
     </nav>
 
+    <!-- Banner -->
+    <div style="background: linear-gradient(135deg, #e0e7ff 0%, #f3e8ff 100%); padding: 3rem 0; margin-bottom: 2rem;">
+      <div class="container text-center">
+        <h2 class="fw-bold text-dark mb-2">Khám Phá Thế Giới Qua Từng Trang Sách</h2>
+        <p class="text-muted">Hàng ngàn tựa sách hấp dẫn đang chờ bạn khám phá</p>
+      </div>
+    </div>
+
     <main class="container my-4">
-      <div class="row">
-        <aside class="col-lg-3 mb-4">
-          <div class="mb-3">
-            <input id="search-input" class="form-control" placeholder="Tìm theo tiêu đề hoặc tác giả" />
-          </div>
-          <div id="filters" class="card p-3">
-            <h6>Lọc</h6>
-            <div class="mb-2">
-              <label class="form-label small">Danh mục</label>
-              <select id="filter-category" class="form-select"><option value="">Tất cả</option></select>
+      <div class="row g-4">
+        <aside class="col-lg-3">
+          <div id="filters" class="filter-card p-4">
+            <h5 class="filter-title">🔍 Lọc & Tìm Kiếm</h5>
+            <div class="mb-3">
+              <input id="search-input" class="form-control" placeholder="Tìm tiêu đề, tác giả..." />
             </div>
-            <div class="mb-2">
-              <label class="form-label small">Tác giả</label>
-              <input id="filter-author" class="form-control" placeholder="Tên tác giả" />
+            <div class="mb-3">
+              <label class="form-label fw-semibold small text-muted">Danh mục</label>
+              <select id="filter-category" class="form-select">
+                <option value="">Tất cả danh mục</option>
+              </select>
             </div>
-            <div class="mb-2 row">
+            <div class="mb-3">
+              <label class="form-label fw-semibold small text-muted">Tác giả</label>
+              <input id="filter-author" class="form-control" placeholder="Nhập tên tác giả..." />
+            </div>
+            <div class="mb-3 row g-2">
               <div class="col-6">
-                <label class="form-label small">Giá từ</label>
-                <input id="filter-minprice" type="number" min="0" class="form-control" placeholder="0" />
+                <label class="form-label fw-semibold small text-muted">Giá từ</label>
+                <input id="filter-minprice" type="number" min="0" class="form-control" placeholder="0₫" />
               </div>
               <div class="col-6">
-                <label class="form-label small">đến</label>
-                <input id="filter-maxprice" type="number" min="0" class="form-control" placeholder="" />
+                <label class="form-label fw-semibold small text-muted">Đến</label>
+                <input id="filter-maxprice" type="number" min="0" class="form-control" placeholder="Max" />
               </div>
             </div>
-            <div class="mb-2">
-              <label class="form-label small">Sắp xếp</label>
+            <div class="mb-4">
+              <label class="form-label fw-semibold small text-muted">Sắp xếp theo</label>
               <select id="filter-sort" class="form-select">
                 <option value="createdAt:desc">Mới nhất</option>
                 <option value="price:asc">Giá: thấp → cao</option>
@@ -60,21 +122,28 @@
               </select>
             </div>
             <div class="d-flex gap-2">
-              <button id="apply-filters" class="btn btn-sm btn-primary flex-grow-1">Áp dụng</button>
-              <button id="clear-filters" class="btn btn-sm btn-outline-secondary">Xóa</button>
+              <button id="apply-filters" class="btn btn-primary flex-grow-1">Áp dụng</button>
+              <button id="clear-filters" class="btn btn-light" style="border: 1px solid #e2e8f0; border-radius: 10px; font-weight: 600;">Xóa</button>
             </div>
           </div>
         </aside>
 
         <section class="col-lg-9">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold mb-0">Tất cả sách</h5>
+            <span class="badge bg-primary rounded-pill px-3 py-2" id="books-count">Đang tải...</span>
+          </div>
           <div id="book-grid" class="book-grid"></div>
-          <nav id="pagination" class="mt-4" aria-label="Page navigation"></nav>
+          <nav id="pagination" class="mt-5 d-flex justify-content-center" aria-label="Page navigation"></nav>
         </section>
       </div>
     </main>
 
-    <footer class="bg-light py-4 mt-auto">
-      <div class="container text-center small text-muted">© WebBanSach</div>
+    <footer class="bg-dark py-4 mt-auto text-white">
+      <div class="container text-center small opacity-75">
+        <p class="mb-1 fw-bold fs-6">📚 Bookstore</p>
+        <div>© 2026 Bản quyền thuộc về WebBanSach.</div>
+      </div>
     </footer>
 
     <script type="module" src="js/ui.js"></script>

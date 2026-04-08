@@ -38,8 +38,19 @@ const getOrderById = async (req, res) => {
   }
 };
 
+const updateStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+    const order = await orderService.updateOrderStatus(req.params.id, status);
+    res.status(200).json({ success: true, data: order, message: 'Status updated successfully' });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   checkout,
   getMyOrders,
-  getOrderById
+  getOrderById,
+  updateStatus
 };
